@@ -1,0 +1,63 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: "process-access"
+spec:
+  kprobes:
+  ####################################################################
+  # sys_prctl
+  ####################################################################
+
+  ####################################################################
+  # Privilege Escalation T1068
+  - call: "sys_prctl"
+    syscall: true
+    args: [{index: 0, type: "int"}]
+    selectors:
+      - matchArgs: [{index: 0, operator: "Equal", values: ["4"]}] # PR_SET_DUMPABLE
+        matchActions: [{action: Post}]
+      - matchArgs: [{index: 0, operator: "Equal", values: ["8"]}] # PR_SET_KEEPCAPS
+        matchActions: [{action: Post}]
+      - matchArgs: [{index: 0, operator: "Equal", values: ["35"]}] # PR_SET_NO_NEW_PRIVS
+        matchActions: [{action: Post}]
+  ####################################################################
+
+  ####################################################################
+  # sys_uname
+  ####################################################################
+
+  ####################################################################
+  # Privilege Escalation T1068
+  - call: "sys_uname"
+    syscall: true
+    selectors: [{matchActions: [{action: Post}]}]
+  ####################################################################
+
+  ####################################################################
+  # sys_unshare
+  ####################################################################
+
+  ####################################################################
+  # Privilege Escalation T1611
+  - call: "sys_unshare" # 네임스페이스 분리 시도
+    syscall: true
+    selectors:
+      - matchPIDs:
+        - operator: "NotIn"
+          values: [1, 1000]
+        matchActions:
+          - action: Post
+  ####################################################################
+
+  ####################################################################
+  # sys_keyctl
+  ####################################################################
+
+  ####################################################################
+  # Privilege Escalation T1611
+  - call: "sys_keyctl" # 커널 키링 접근
+    syscall: true
+    selectors:
+    - matchActions:
+      - action: Post
+  ####################################################################

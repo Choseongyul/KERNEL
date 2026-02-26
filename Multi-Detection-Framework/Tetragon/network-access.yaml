@@ -1,0 +1,234 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: "network-access"
+spec:
+  kprobes:
+    ####################################################################
+    # inet_csk_accept
+    ####################################################################
+
+    ####################################################################
+    # External Remote Service T1133
+    - call: "inet_csk_accept"
+      syscall: false
+      args: [{index: 0, type: "sock"}]
+      selectors:
+        - matchBinaries:
+          - operator: "NotIn"
+            values: ["/usr/local/bin/node"]
+    ####################################################################
+
+    ####################################################################
+    # tcp_connect
+    ####################################################################
+
+    ####################################################################
+    # Persistence T1525
+    - call: "tcp_connect"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+      selectors:
+        - matchBinaries:
+          - operator: "In"
+            values: ["/usr/bin/curl", "/usr/bin/wget", "/usr/local/bin/curl"]
+        - matchArgs:
+          - index: 0
+            operator: "Prefix"
+            values: ["index.docker.io", "pkg.dev", "amazonaws.com"]
+    ####################################################################
+
+    ####################################################################
+    # Discover T1046
+    - call: "tcp_connect"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+      selectors:
+        - matchArgs:
+          - index: 0
+            operator: "DPort"
+            values: 
+              - "22"
+              - "2222"
+              - "3306"
+              - "5432"
+              - "6379"
+              - "80"
+              - "443"
+              - "6443"
+              - "10250"
+          - index: 0
+            operator: "DAddr"
+            values:
+              - "10.0.0.0/8"
+              - "172.16.0.0/12"
+              - "192.168.0.0/16"
+              - "10.96.0.1"  # [중요] kubectl get svc kubernetes IP 입력
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - "/usr/bin/kubelet"
+                - "/usr/bin/vmtoolsd"
+                - "/usr/local/bin/kube-proxy"
+          matchActions:
+            - action: Post
+    ####################################################################
+
+    ####################################################################
+    # Impact T1496
+    - call: "tcp_connect"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+      selectors:
+        - matchBinaries:
+          - operator: "In"
+            values:
+              - "/usr/bin/xmrig" # 채굴기 경로 (환경에 따라 조정)
+              - "/bin/xmrig"
+              - "/xmrig"         # 현재 디렉토리 실행 (./xmrig)
+              - "/usr/bin/chisel"
+              - "/bin/chisel"
+              - "/chisel"
+          matchActions:
+            - action: Post
+    ####################################################################
+
+    ####################################################################
+    # Scheduled Task Job T1053
+    - call: "tcp_connect"
+      syscall: false
+      data:
+        - index: 0
+          type: "string"
+          source: "current_task"
+          resolve: "comm"
+      args: [{index: 0, type: "sock"}]
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "DPort"
+              values: ["6443"]
+          matchData:
+            - index: 0
+              operator: "NotEqual"
+              values: 
+                - "kube-apiserver"
+                - "kube-proxy"
+                - "cilium-agent"
+                - "coredns"
+                - "fluentd"
+                - "kubelet"
+    ####################################################################
+
+    ####################################################################
+    # tcp_v4_connect
+    ####################################################################
+
+    ####################################################################
+    # External Remote Service T1133
+    - call: "tcp_v4_connect"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+        - index: 1
+          type: "sockaddr"
+      data:
+        - index: 0
+          type: "string"
+          source: "current_task"
+          resolve: "comm"
+      selectors:
+        - matchArgs:
+          - index: 0
+            operator: "DPort"
+            values: ["53"]
+        - matchData:
+          - index: 0
+            operator: "Equal"
+            values: ["sh"]
+          - index: 0
+            operator: "Equal"
+            values: ["bash"]
+          - index: 0
+            operator: "Equal"
+            values: ["nc"]
+          - index: 0
+            operator: "Equal"
+            values: ["netcat"]
+          - index: 0
+            operator: "Equal"
+            values: ["socat"]
+        - matchData:
+          - index: 0
+            operator: "Equal"
+            values: ["python"]
+          - index: 0
+            operator: "Equal"
+            values: ["python3"]
+    ####################################################################
+    
+    ####################################################################
+    # sys_socket
+    ####################################################################
+
+    ####################################################################
+    # Discover T1046
+    # Discover T1613
+    # Discover T1498
+    # Impact T1496
+    - call: "sys_socket"
+      syscall: true
+      args:
+        - index: 0
+          type: "int"
+        - index: 1
+          type: "int"
+        - index: 2
+          type: "int"
+      selectors:
+        - matchArgs:
+          - index: 1
+            operator: "Equal"
+            values:
+              - "3"
+              - "524291"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - "/usr/bin/vmtoolsd"
+                - "/usr/bin/kubelet"
+          matchActions:
+            - action: Post
+    ####################################################################
+
+    ####################################################################
+    # sys_sendto
+    ####################################################################
+
+    ####################################################################
+    # Impact T1499
+    - call: "sys_sendto"
+      syscall: true
+      args:
+        - index: 4
+          type: "sockaddr" 
+        - index: 2
+          type: "size_t" 
+      selectors:
+        - matchBinaries:
+          - operator: "In"
+            values:
+              - "/usr/sbin/hping3"
+              - "/usr/bin/hping3"
+              - "/bin/hping3"
+              - "/sbin/hping3"
+          matchActions:
+            - action: Post
+    ####################################################################

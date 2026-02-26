@@ -1,0 +1,40 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: global-l7-visibility
+spec:
+  endpointSelector: {}
+  egress:
+    - toEntities:
+        - all
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "3443"
+              protocol: TCP
+          rules:
+            http:
+              - method: ".*"
+    - toEntities:
+        - all
+  ingress:
+    - fromEntities:
+        - all
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "3443"
+              protocol: TCP
+          rules:
+            http:
+              - method: ".*"
+    - fromEntities:
+        - all
