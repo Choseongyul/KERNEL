@@ -70,7 +70,7 @@ Kernel Level에서 동작하는 보안 도구는 탐지된 데이터 처리를 U
 </div>
 
 ## 프로젝트 시연 영상
-> 각 사진을 클릭하면 유튜브를 통해 시연 영상 확인이 가능합니다.
+> 💡 각 사진을 클릭하면 유튜브를 통해 시연 영상 확인이 가능합니다.
 - 탐지 프로세스
 
 [![ForenSeek 탐지 시연 영상](http://img.youtube.com/vi/s5dxiA3xIXg/0.jpg)](https://youtu.be/s5dxiA3xIXg)
