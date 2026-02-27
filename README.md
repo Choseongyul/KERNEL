@@ -1,6 +1,6 @@
 # KERNEL: K8s Evidence Reconstruction &amp; Network Event Ledger
 
-<img src="./image/thumbNail.png"/>
+<img src="./media/thumbNail.png"/>
 
 > 본 프로젝트는 토스뱅크 사이버보안 엔지니어 부트캠프에서 진행되었습니다.
 
@@ -39,5 +39,6 @@ KERNEL 프로젝트는 쿠버네티스 환경에서 위협 행위에 대한 **�
 ## 프로젝트 시연 영상
 - 탐지 프로세스
 <video src="./media/ForenSeek_탐지시연.mp4" controls/>
+
 - 분석 프로세스
 <video src="./media/ForenSeek_분석시연.mp4" controls/>
