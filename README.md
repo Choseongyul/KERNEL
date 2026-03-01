@@ -2,7 +2,10 @@
 
 <img src="./media/thumbNail.png"/>
 
-> 본 프로젝트는 토스뱅크 사이버보안 엔지니어 부트캠프에서 진행되었습니다.
+> 본 프로젝트는 토스뱅크 사이버보안 엔지니어 부트캠프에서 진행되었습니다.</br>
+
+### 프로젝트 수행기간
+2025.12.15 ~ 2026.02.06
 
 ## 프로젝트 Overview
 KERNEL 프로젝트는 쿠버네티스 환경에서 위협 행위에 대한 **탐지 및 분석 고도화**라는 주제로 진행한 팀 프로젝트입니다. </br>
@@ -36,10 +39,22 @@ Kernel Level에서 동작하는 보안 도구는 탐지된 데이터 처리를 U
 
 4. **상관분석을 통한 공격 시나리오 재구성**</br>
 <img src="media/correlation.png"/>
-탐지된 시스템, 네트워크 이벤트를 **상관분석**하여 최종적으로 공격 흐름을 재구성하는 것을 목표로 했습니다.</br></br>
+탐지된 시스템, 네트워크 이벤트를 **상관분석** 하여 최종적으로 공격 흐름을 재구성하는 것을 목표로 했습니다.</br></br>
 
 ### 프로젝트 수행환경 아키텍쳐
 <img src="media/architecture.png"/>
+
+### 탐지 및 분석 파이프라인
+<img src="media/detectAnalyPipeline.png"/>
+
+본 프로젝트의 탐지 및 분석 파이프라인입니다. 동작 순서는 아래 설명과 같습니다. </br>
+1. 쿠버네티스 클러스터 내에서 Tetragon과 Hubble을 통해 탐지. fluentd를 통해 탐지 이벤트 수집.
+2. Tetragon의 탐지 결과를 Open Search에 전송하여 지식 기반 탐지 수행. Tetragon과 Hubble 탐지 결과를 ClickHouse에 전송하여 이상 탐지 수행.
+3. Open Search에서 Alert 발생시 ClickHouse에 Alert 정보 전송.
+4. ClickHouse에서 분석을 위해 Alert 정보 추출 후 Network, System 이벤트에 대한 Summary Report 생성
+5. 추출된 Summary Report를 이용해 Milestone 설정, Seed 식별 후 교차 검증을 통해 킬체인 재구성
+
+> 환경 구성, 탐지, 분석 프로세스에 대한 자세한 설명은 현재 브렌치의 Infra, Multi-Detection-Framework, Analysis 폴더의 **README** 파일을 참고 해주세요.
 
 ## 팀 소개
 <div align="center">
